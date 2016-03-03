@@ -25,7 +25,7 @@ public class RequestHandler extends Thread {
 			// TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
 			
 			DataOutputStream dos = new DataOutputStream(out);
-			byte[] body = "I am happy to remind (~: home, .:current ..:parent) ㅠㅠ".getBytes();
+			byte[] body = "I am happy to remind (~: home, .:current ..:parent). Korean Chareacters are not displayed. Why?".getBytes();
 			response200Header(dos, body.length);
 			responseBody(dos, body);
 		} catch (IOException e) {
