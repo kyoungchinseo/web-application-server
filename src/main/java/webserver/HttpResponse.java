@@ -1,61 +1,61 @@
 package webserver;
 
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.Socket;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import db.DataBase;
-import model.User;
-import util.HttpRequestUtils;
 
-public class RequestHandler extends Thread {
-	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
+public class HttpResponse {
+	private static final Logger log = LoggerFactory.getLogger(HttpResponse.class);
 	
-	private Socket connection;
-
-	public RequestHandler(Socket connectionSocket) {
-		this.connection = connectionSocket;
+	OutputStream out;
+	
+	public HttpResponse(OutputStream out) {
+		this.out = out;
 	}
-
-	public void run() {
-		log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(), connection.getPort());
-		
-		try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
-			// TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-			
-			InputStreamReader isr = new InputStreamReader(in);
-			BufferedReader br = new BufferedReader(isr);
-			
-			HttpRequest httpRequest = new HttpRequest(br);
-			
-			// read stream data
-			Map<String,String> http = new HashMap<String,String>();
-			http = httpRequest.getHTTPMap(br);
-			System.out.println("HASHMAP: " + http.toString());
-			
-			HttpResponse httpResponse = new HttpResponse(out);
-			
-			httpRequest.respond(br, http, httpResponse);
-			
-		} catch (IOException e) {
-			log.error(e.getMessage());
+	
+	public void response202(String url) throws IOException {
+		byte[] body = Files.readAllBytes(new File("./webapp"+url).toPath());
+		DataOutputStream dos = new DataOutputStream(out);
+		String contentType = "text/html";
+		if (url.contains("css")) {
+			contentType = "text/css";
 		}
+		response200Header(dos, contentType, body.length);
+		responseBody(dos, body);
 	}
-
+	
+	public void response202(String url, String data) {
+		DataOutputStream dos = new DataOutputStream(out);
+		byte[] body = data.getBytes();
+		String contentType = "text/html";
+		if (url.contains("css")) {
+			contentType = "text/css";
+		}
+		response200Header(dos, contentType, body.length);
+		responseBody(dos, body);
+	}
+	
+	
+	public void response302(String url) throws IOException {
+		byte[] body = Files.readAllBytes(new File("./webapp"+url).toPath());
+		DataOutputStream dos = new DataOutputStream(out);
+		response302Header(dos, url, false, body.length);
+		responseBody(dos, body);
+	}
+		
+	public void response302(String url, boolean setCookie) throws IOException {
+		byte[] body = Files.readAllBytes(new File("./webapp"+url).toPath());
+		DataOutputStream dos = new DataOutputStream(out);
+		response302Header(dos, url, setCookie, body.length);
+		responseBody(dos, body);
+	}
+	
 	private void response302Header(DataOutputStream dos, String url, boolean setCookie, int lengthOfBodyContent) {
 		// TODO Auto-generated method stub
 		try {
@@ -84,7 +84,7 @@ public class RequestHandler extends Thread {
 		}
 	}
 	
-	private void response200Header(DataOutputStream dos, int lengthOfBodyContent) {
+	private void response200Header(DataOutputStream dos,int lengthOfBodyContent) {
 		try {
 			dos.writeBytes("HTTP/1.1 200 OK \r\n");
 			dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
@@ -103,4 +103,6 @@ public class RequestHandler extends Thread {
 			log.error(e.getMessage());
 		}
 	}
+
+	
 }
