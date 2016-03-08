@@ -148,8 +148,7 @@ public class RequestHandler extends Thread {
 			if (http.get("METHOD").equals("POST")) {
 				String url = http.get("url");
 				if (url.equals("/")) {
-					url = "/index.html";
-					//return;
+					return;
 				}
 				if (url.equals("/user/create")) {
 					int contentLength = Integer.parseInt(http.get("Content-Length"));
@@ -187,11 +186,12 @@ public class RequestHandler extends Thread {
 					Map<String,String> data = new HashMap<String,String>();
 					data = HttpRequestUtils.parseQueryString(userData);	
 
-					
+				
 					// compare data
 					User user = DataBase.findUserById(data.get("userId"));
+					
 					boolean setCookie = false;
-					if (user != null) { // login succeeded.
+					if (user != null && user.getPassword().equals(data.get("password"))) { // login succeeded.
 						url = "/index.html";
 						setCookie = true;
 						System.out.println(user.toString());
