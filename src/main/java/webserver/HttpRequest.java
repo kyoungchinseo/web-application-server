@@ -66,25 +66,37 @@ public class HttpRequest {
 	private void respondGET(Map<String, String> http, HttpResponse httpResponse) {
 		String url = http.get("url");
 		
-		int index = url.indexOf("?");  // if no ?, -1 
-		if (index > -1) { // request from GET method with user data
-			String requestPath = url.substring(0,index);
-			String params = url.substring(index+1);
-			
-			Map<String,String> data = new HashMap<String,String>();
-			data = HttpRequestUtils.parseQueryString(params);	
-			User user = new User(data.get("userId"), data.get("password"),data.get("name"),data.get("email"));
-			System.out.println("USER: " + user);
-			
-			// ADD USER to STATIC RAM MEMORY
-			DataBase.addUser(user);
-			
-			
-			// request
-			httpResponse.response202(url, user.toString());
-			
-			return;
-		} 
+		int index = url.indexOf("?"); 
+		String requestPath = "";
+		String params = "";
+		if (index != -1) { // request from GET method with user data
+			requestPath = url.substring(0,index);
+			params = url.substring(index+1);
+		}
+		
+		if (index > -1) {
+			if (requestPath.equals("/user/create")) {
+				Map<String,String> data = new HashMap<String,String>();
+				data = HttpRequestUtils.parseQueryString(params);	
+				User user = new User(data.get("userId"), data.get("password"),data.get("name"),data.get("email"));
+				System.out.println("USER: " + user);
+				
+				// ADD USER to STATIC RAM MEMORY
+				DataBase.addUser(user);
+				
+				// request
+				// httpResponse.response202(url, user.toString()); // for test
+				// redirection
+				url = "/index.html";
+				try {
+					httpResponse.response302(url);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return;
+			}
+		}
 		
 		if (url.equals("/user/list")) {
 			String cookie = http.get("Cookie");
