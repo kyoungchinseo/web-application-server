@@ -46,8 +46,11 @@ public class RequestHandler extends Thread {
 				
 			if (http.get("METHOD").equals("GET")) {
 				String url = http.get("url");
-				if (url.equals("/") || url.equals("/favicon.ico")) {
+				if (url.equals("/favicon.ico")) {
 					return;
+				}
+				if (url.equals("/")) {
+					url = "/index.html";
 				}
 				int index = url.indexOf("?");
 				System.out.println("index:" + index);
@@ -145,7 +148,8 @@ public class RequestHandler extends Thread {
 			if (http.get("METHOD").equals("POST")) {
 				String url = http.get("url");
 				if (url.equals("/")) {
-					return;
+					url = "/index.html";
+					//return;
 				}
 				if (url.equals("/user/create")) {
 					int contentLength = Integer.parseInt(http.get("Content-Length"));
